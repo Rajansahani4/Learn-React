@@ -6,29 +6,47 @@ import Spinner from "./Spinner";
 
 
 export class News extends Component {
-  constructor() {
-    super();
+  constructor(props) {
+    super(props);
     this.state = {
       articles: [],
       loading: false,
       page: 1,
       totalResults: 0,
-      pageSize: 5,
+      pageSize: 20,
       loading: false,
     };
+    document.title=`NewsMonkey - ${this.props.category.charAt(0).toUpperCase() + this.props.category.slice(1)}`;
+    
+  }
+
+  /**
+   * update news
+   */
+
+  async updateNews() {  
+    let url =
+    `https://newsapi.org/v2/top-headlines?country=us&category=${this.props.category}&apiKey=47d573b392ed4d5a894c74798d717397&pageSize=${this.state.pageSize}`;
+
+    this.setState({ loading: true });
+    let data = await fetch(url);
+    let parsedData = await data.json();
+
+    this.setState({ articles: parsedData.articles ,totalResults: parsedData.totalResults , loading: false});
+
   }
 
   /**
    * Getting data from API
    */
   async componentDidMount() {
-    let url =
-      `https://newsapi.org/v2/top-headlines?country=us&category=${this.props.category}&apiKey=47d573b392ed4d5a894c74798d717397&page=${this.state.page- 1}&pageSize=${this.state.pageSize}`;
-    this.setState({ loading: true });
-    let data = await fetch(url);
-    let parsedData = await data.json();
     
-    this.setState({ articles: parsedData.articles ,totalResults: parsedData.totalResults , loading: false});
+    this.updateNews();
+    
+    this.setState({
+      page: this.state.page - 1,
+    });
+
   }
 
 /**
@@ -36,16 +54,12 @@ export class News extends Component {
  */ 
   handlePrevious = async () => {
     
-    let url = `https://newsapi.org/v2/top-headlines?country=us&category=${this.props.category}&apiKey=47d573b392ed4d5a894c74798d717397&page=${this.state.page- 1}&pageSize=${this.state.pageSize}`;
-    this.setState({ loading: true });
-    let data = await fetch(url);
-    let parsedData = await data.json();
+    this.updateNews();
 
     this.setState({
       page: this.state.page - 1,
-      articles: parsedData.articles,
-      loading: false
     });
+
   };
 
   /**
@@ -57,17 +71,14 @@ export class News extends Component {
       console.log("No more pages");
       return;
     }else{
-      let url = `https://newsapi.org/v2/top-headlines?country=us&category=${this.props.category}&apiKey=47d573b392ed4d5a894c74798d717397&page=${this.state.page+1}&pageSize=${this.state.pageSize}`;
-      this.setState({ loading: true });
-   
-      let data = await fetch(url);
-      let parsedData = await data.json();
   
+      this.updateNews();
+
       this.setState({
         page: this.state.page + 1,
-        articles: parsedData.articles,
-        loading: false
-      });
+       
+      });  
+
     }
   };
 
